@@ -82,8 +82,9 @@ class BukuController extends Controller
                 $path = $foto->storeAs('Gambar_buku', $fileName, 'public');
                 $anas_buku->Gambar = $path;
             }
+            $anasJudul = $anas_buku->Judul; // Simpan judul sebelum menghapus data
 
-            // Simpan data buku
+            // Simpan data buku     
             $anas_buku->save();
 
             foreach ($anas_request->input('KategoriID') as $kategoriID) {
@@ -97,7 +98,7 @@ class BukuController extends Controller
                 LogAktivitas::create([
                     'UserID' => Auth::user()->UserID,
                     'aksi' => 'Tambah Buku',
-                    'detail' => $anas_buku->Judul,
+                    'detail' => 'Tambah Buku dengan Judul ' . $anasJudul,
                     'created_at' => Carbon::now()->locale('id')->translatedFormat('Y-m-d H:i:s'),
                 ]);
             };
@@ -139,6 +140,8 @@ class BukuController extends Controller
                 $anas_validatedData['cover'] = $anas_file->storeAs('Gambar_buku', $anas_fileName, 'public');
                 $anas_Buku->Gambar = $anas_validatedData['cover'];
             }
+            $anasJudul = $anas_Buku->Judul; // Simpan judul sebelum menghapus data
+
             // Perbarui data buku
             $anas_Buku->update($anas_validatedData);
             // Handle categories:
@@ -155,7 +158,7 @@ class BukuController extends Controller
                 LogAktivitas::create([
                     'UserID' => Auth::user()->UserID,
                     'aksi' => 'Update Buku',
-                    'detail' => $anas_buku->Judul,
+                    'detail' => 'Update Buku ' . $anasJudul,
                     'created_at' => Carbon::now()->locale('id')->translatedFormat('Y-m-d H:i:s'),
                 ]);
             }
@@ -172,6 +175,8 @@ class BukuController extends Controller
     {
         try {
             $anas_Buku = Buku::find($anas_buku);
+            $anasJudul = $anas_Buku->Judul; // Simpan judul sebelum menghapus data
+
             $anas_Buku->delete();
 
             // Log activity if the user is a 'petugas'
@@ -179,7 +184,7 @@ class BukuController extends Controller
                 LogAktivitas::create([
                     'UserID' => Auth::user()->UserID,
                     'aksi' => 'Hapus Buku',
-                    'detail' => $anas_buku->Judul,
+                    'detail' => 'Hapus Buku' . $anasJudul,
                     'created_at' => Carbon::now()->locale('id')->translatedFormat('Y-m-d H:i:s'),
                 ]);
             }

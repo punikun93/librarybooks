@@ -34,35 +34,49 @@
                         <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Full Name</th>
                         <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Book Title</th>
                         <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Borrow Date</th>
+                        @if (!Route::is('borrow.history') )
                         <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Return Date</th>
+                        @endif
+                        @if (Route::is('borrow.history') || Route::is('borrow.return'))
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">User Return</th>
+                        @endif
                         <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Status Borrowing</th>
                         @if (!Route::is('borrow.history') && !Route::is('borrow'))
                             <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Action</th>
                         @endif
                     </tr>
-                </thead>
+                </thead> 
                 <tbody>
                     @forelse ($anas_peminjaman as $peminjaman)
-                        <tr class="border-t">
-                            <td class="px-4 py-2 text-sm text-gray-700">
+            
+                        
+                    <tr class="border-t @if ($peminjaman->Status === 'over') bg-red-400 text-white @endif">
+                        <td class="px-4 py-2 text-sm ">
                                 {{ $peminjaman->user->NamaLengkap ?? 'Unknown User' }}
                             </td>
-                            <td class="px-4 py-2 text-sm text-gray-700">
+                            <td class="px-4 py-2 text-sm ">
                                 {{ $peminjaman->buku->Judul ?? 'Unknown Book' }}
                             </td>
-                            <td class="px-4 py-2 text-sm text-gray-700">
+                            <td class="px-4 py-2 text-sm ">
                                 {{ $peminjaman->TanggalPeminjaman ? \Carbon\Carbon::parse($peminjaman->TanggalPeminjaman)->format('d M Y') : '-' }}
                             </td>
-
-                            <td class="px-4 py-2 text-sm text-gray-700">
+                            @if (!Route::is('borrow.history') )
+                            <td class="px-4 py-2 text-sm ">
                                 {{ $peminjaman->TanggalPengembalian ? \Carbon\Carbon::parse($peminjaman->TanggalPengembalian)->format('d M Y') : '-' }}
                             </td>
+                            @endif
 
-                            <td class="px-4 py-2 text-sm text-gray-700 capitalize">
+                            @if (Route::is('borrow.history') || Route::is('borrow.return'))
+                            <td class="px-4 py-2 text-sm ">
+                                {{ $peminjaman->pengembalian->created_at ? \Carbon\Carbon::parse($peminjaman->pengembalian->created_at)->format('d M Y') : '-' }}
+                            </td>
+                            @endif
+
+                            <td class="px-4 py-2 text-sm  capitalize">
                                 {{ ucfirst($peminjaman->Status) }}
                             </td>
 
-                            <td class="flex justify-center space-x-2 py-4 text-sm text-gray-700">
+                            <td class="flex justify-center space-x-2 py-4 text-sm ">
                                 @if (Route::is('borrow.confirmed'))
                                     <form action="{{ route('borrow.update', $peminjaman->PeminjamanID) }}"
                                         method="POST">
@@ -101,7 +115,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-2 text-center text-sm text-gray-700">
+                            <td colspan="6" class="px-4 py-2 text-center text-sm ">
                                 No borrows found.
                             </td>
                         </tr>

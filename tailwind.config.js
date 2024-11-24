@@ -11,6 +11,12 @@ export default {
     ],
     theme: {
         extend: {
+            keyframes: {
+                arrow: {
+                    '0%, 100%': { transform: 'translateX(0)' },
+                    '50%': { transform: 'translateX(5px)' },
+                  },
+            },
             fontFamily: {
                 poppins: ['Poppins', 'sans-serif'],
             },

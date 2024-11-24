@@ -1,19 +1,20 @@
 <?php
 
+use App\Models\Buku;
 use App\Models\Kategori;
 use App\Models\Peminjaman;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BukuController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\AdminController;
+use App\Http\Middleware\PetugasMiddleware;
 use App\Http\Controllers\KategoriController;
-use App\Http\Controllers\KoleksiPribadiController;
 use App\Http\Controllers\PeminjamanController;
 use App\Http\Controllers\UlasanBukuController;
-use App\Http\Middleware\PetugasMiddleware;
-use App\Models\Buku;
+use App\Http\Controllers\KoleksiPribadiController;
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
@@ -39,10 +40,6 @@ Route::middleware(AdminMiddleware::class)->group(function () {
     Route::post('/books/store', [BukuController::class, 'store'])->name('books.store');
     Route::put('/books/{buku}', [BukuController::class, 'update'])->name('books.update');
     Route::delete('/books/{buku}', [BukuController::class, 'destroy'])->name('books.destroy');
-
-
-    // Route::get('/account/details', [])->name('account.details');
-    // Route::get('/account/security', [])->name('account.security');
 });
 
 Route::get('/borrowed', [UlasanBukuController::class, 'borrowed'])->name('report.borrow');
@@ -81,17 +78,24 @@ Route::middleware('auth')->group(function () {
     Route::post('/borrowing/store', [UlasanBukuController::class, 'store'])->name('ulasan.store');
     Route::post('/borrowing/back', [PeminjamanController::class, 'back'])->name('pengembalian.store');
 });
-
 Route::get('/', function () {
     // Ambil ID buku yang sedang dipinjam dengan status 'booked'
     $excludedBookIDs = Peminjaman::where('Status', 'booked')->pluck('BukuID');
-    $anas_books = Buku::with('ulasanBuku')->get();  
+
+    // Ambil 3 buku dengan rating terbaik
+    $anas_books = Buku::with('ulasanBuku')
+        ->withCount(['ulasanBuku as average_rating' => function ($query) {
+            $query->select(DB::raw('AVG(Rating)'));
+        }])
+        ->orderByDesc('average_rating') // Urutkan berdasarkan rating tertinggi
+        ->take(3) // Batasi hanya 3 buku
+        ->get();
+
+    // Ambil semua kategori
     $anas_kategori = Kategori::all();
 
-    // Tandai buku yang sedang dipinjam
     foreach ($anas_books as $book) {
         $book->isBooked = $excludedBookIDs->contains($book->BukuID);
     }
-
     return view('landingPage', compact('anas_kategori', 'anas_books'));
 })->name('landingPage');

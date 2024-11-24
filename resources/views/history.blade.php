@@ -18,18 +18,19 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50">
                     <div class="bg-white p-4 rounded-xl shadow-sm">
                         <h3 class="text-sm font-medium text-gray-500">Total Peminjaman</h3>
-                        <p class="text-2xl font-bold text-gray-900">{{ count($anas_peminjaman->whereIn('Status',['booked' , 'done'])) }}</p>
+                        <p class="text-2xl font-bold text-gray-900">
+                            {{ count($anas_peminjaman->whereIn('Status', ['booked', 'done'])) }}</p>
                     </div>
                     <div class="bg-white p-4 rounded-xl shadow-sm">
                         <h3 class="text-sm font-medium text-gray-500">Sedang Dipinjam</h3>
                         <p class="text-2xl font-bold text-blue-600">
-                            {{ $anas_peminjaman->where('Status','booked')->count()}}
+                            {{ $anas_peminjaman->where('Status', 'booked')->count() }}
                         </p>
                     </div>
                     <div class="bg-white p-4 rounded-xl shadow-sm">
                         <h3 class="text-sm font-medium text-gray-500">Dikembalikan</h3>
-                        <p class="text-2xl font-bold text-green-600">   
-                            {{ $anas_pengembalian }}
+                        <p class="text-2xl font-bold text-green-600">
+                            {{ $anas_pengembalian->count() }}
                         </p>
                     </div>
                 </div>
@@ -77,9 +78,17 @@
                                                     {{ $peminjaman->buku->Penerbit }}</p>
                                                 <p class="text-xs text-gray-500">Tahun Terbit:
                                                     {{ $peminjaman->buku->TahunTerbit }}</p>
-                                                <span class="inline-block mt-1 text-xs text-gray-400">
+
+
+                                                <span class=" mt-1 text-xs text-gray-400">
                                                     Dipinjam pada: {{ $peminjaman->created_at->format('d M Y') }}
                                                 </span>
+                                                <div class="">
+                                                    <span class="text-xs text-gray-400">
+                                                        Batas Pengembalian:   
+                                                       <span class="underline">  {{ $peminjaman->TanggalPengembalian ? \Carbon\Carbon::parse($peminjaman->TanggalPengembalian)->format('d M Y') : '-' }}</span>
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -96,6 +105,12 @@
                                                     class="px-3 py-1 inline-flex items-center space-x-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
                                                     <span class="w-2 h-2 rounded-full bg-green-400"></span>
                                                     <span>Selesai Dipinjam</span>
+                                                </span>
+                                            @elseif ($peminjaman->Status === 'over')
+                                                <span
+                                                    class="px-3 py-1 inline-flex items-center space-x-1 rounded-full text-xs font-medium bg-red-50 text-red-700">
+                                                    <span class="w-2 h-2 rounded-full bg-red-400"></span>
+                                                    <span>Melewati Batas</span>
                                                 </span>
                                             @else
                                                 <span
@@ -131,33 +146,46 @@
                                                     </span>
                                                 @elseif ($peminjaman->pengembalian->Status === 'done')
                                                     <span class="text-sm text-gray-400">Sudah dikembalikan</span>
+                                            
                                                 @endif
+                                            @elseif ($peminjaman->Status === 'over')
+                                                <span
+                                                    class="px-3 py-1 inline-flex items-center space-x-1 rounded-full text-xs font-medium bg-red-50 text-red-700">
+                                                    <span class="w-2 h-2 rounded-full bg-red-400"></span>
+                                                    <span>Pengembalian Terlambat</span>
+                                                </span>
                                             @endif
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 select-none">
-                                        @if ($peminjaman->pengembalian->Status??'' === 'done')
+                                        @if ($peminjaman->pengembalian->Status ?? '' === 'done')
                                             @if ($peminjaman->ulasan)
                                                 <div class="space-y-2">
                                                     <div class="flex items-center space-x-1">
                                                         @for ($i = 0; $i < $peminjaman->ulasan->Rating; $i++)
-                                                          ⭐
+                                                            ⭐
                                                         @endfor
                                                     </div>
-                                                    <p class="text-sm text-gray-600">{{ $peminjaman->ulasan->Ulasan }}</p>
+                                                    <p class="text-sm text-gray-600">{{ $peminjaman->ulasan->Ulasan }}
+                                                    </p>
                                                 </div>
-                                            @else
+                                            @elseif ($peminjaman->Status === 'done')
                                                 <button data-modal-toggle="ulasanModal{{ $peminjaman->PeminjamanID }}"
                                                     data-modal-target="ulasanModal{{ $peminjaman->PeminjamanID }}"
                                                     class="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                                     Beri Ulasan
                                                 </button>
                                             @endif
+                                        @elseif ($peminjaman->pengembalian->Status?? '' === 'over')
+                                            
+                                            <span class="text-sm text-red-400">Tidak dapat diulas</span>
+
+
                                         @else
                                             <span class="text-sm text-gray-400">Belum dapat diulas</span>
                                         @endif
                                     </td>
-                                    
+
                                 </tr>
                                 <div id="ulasanModal{{ $peminjaman->PeminjamanID }}" tabindex="-1" aria-hidden="true"
                                     class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 w-full md:inset-0 h-modal md:h-full backdrop-blur">

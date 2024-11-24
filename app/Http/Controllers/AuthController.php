@@ -62,20 +62,20 @@ class AuthController extends Controller
                 Auth::logout(); // Log out the user immediately
                 return back()->withErrors(['status' => 'Your account hasnt been confirmed yet']);
             }
-
-            // Check if the user has the appropriate role
-            if (Auth::user()->Role === 'petugas') {
-                // Log the login activity for staff members
-                LogAktivitas::create([
-                    'UserID' => Auth::user()->UserID,
-                    'aksi' => 'Login',
-                    'detail' => 'Staff member logged in to the system',
-                    'created_at' => Carbon::now()->locale('id')->translatedFormat('Y-m-d H:i:s'),
-                ]);
+            if (Auth::user()->Role !== 'peminjam') {
+                // Check if the user has the appropriate role
+                if (Auth::user()->Role === 'petugas') {
+                    // Log the login activity for staff members
+                    LogAktivitas::create([
+                        'UserID' => Auth::user()->UserID,
+                        'aksi' => 'Login',
+                        'detail' => 'Staff member logged in to the system',
+                        'created_at' => Carbon::now()->locale('id')->translatedFormat('Y-m-d H:i:s'),
+                    ]);
+                }
 
                 return redirect()->route('admin.dashboard');
             }
-
             // Redirect regular users
             return redirect()->route('landingPage');
         }

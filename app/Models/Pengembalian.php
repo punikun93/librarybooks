@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Peminjaman;
 use Illuminate\Database\Eloquent\Model;
 
 class Pengembalian extends Model
@@ -16,4 +17,9 @@ class Pengembalian extends Model
         'BukuID',
         'TanggalPengembalian',
     ];
+
+    public function peminjaman()
+    {
+        return $this->hasOne(Peminjaman::class, 'PeminjamanID');
+    }
 }

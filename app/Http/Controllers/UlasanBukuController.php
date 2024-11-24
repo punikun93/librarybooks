@@ -16,18 +16,18 @@ class UlasanBukuController extends Controller
     {
         // Menghitung rata-rata rating per buku dan jumlah ulasan
         $anas_ulasan = UlasanBuku::select(
-                'BukuID',
-                DB::raw('AVG(Rating) as average_rating'),
-                DB::raw('COUNT(Rating) as total_reviews') // Menambahkan total ulasan
-            )
+            'BukuID',
+            DB::raw('AVG(Rating) as average_rating'),
+            DB::raw('COUNT(Rating) as total_reviews') // Menambahkan total ulasan
+        )
             ->groupBy('BukuID')
             ->orderBy('average_rating', 'desc') // Urutkan berdasarkan rata-rata tertinggi
             ->with('buku') // Sertakan relasi buku
             ->get();
-    
+
         return view('admin.booksReview', compact('anas_ulasan'));
     }
-    
+
 
 
     public function borrowed()
@@ -81,7 +81,9 @@ class UlasanBukuController extends Controller
                 $peminjaman_anas->buku->isBooked = in_array($peminjaman_anas->Status, ['proses', 'booked']);
             }
         });
-        $anas_pengembalian = Pengembalian::count();
+        $anas_pengembalian = Pengembalian::whereHas('peminjaman', function ($query) use ($anas_user) {
+            $query->where('UserID', $anas_user);
+        })->with('peminjaman')->get();
         // Return ke view dengan hanya satu variabel
         return view('history', compact('anas_peminjaman', 'anas_pengembalian'));
     }

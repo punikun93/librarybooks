@@ -82,77 +82,92 @@
                         </div>
                     </div>
 
-                    <div id="editBookModal{{ $book->BukuID }}" tabindex="-1" aria-hidden="true" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden backdrop-blur z-50">
+                    <div id="editBookModal{{ $book->BukuID }}" tabindex="-1" aria-hidden="true"
+                        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden backdrop-blur z-50">
                         <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-4 sm:p-6">
                             <h2 class="text-xl sm:text-2xl font-semibold mb-4">Edit Book</h2>
-                            <form action="{{ route('books.update', $book->BukuID) }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('books.update', $book->BukuID) }}" method="POST"
+                                enctype="multipart/form-data">
                                 @csrf
                                 @method('PUT')
-                    
+
                                 <!-- Input: Judul -->
                                 <div class="mb-3">
-                                    <label for="editBookTitle{{ $book->BukuID }}" class="block text-sm font-medium text-gray-700">Judul</label>
+                                    <label for="editBookTitle{{ $book->BukuID }}"
+                                        class="block text-sm font-medium text-gray-700">Judul</label>
                                     <input type="text" name="Judul" id="editBookTitle{{ $book->BukuID }}"
-                                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm" value="{{ $book->Judul }}" required>
+                                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm"
+                                        value="{{ $book->Judul }}" required>
                                 </div>
-                    
+
                                 <!-- Input: Penulis -->
                                 <div class="mb-3">
-                                    <label for="editBookAuthor{{ $book->BukuID }}" class="block text-sm font-medium text-gray-700">Penulis</label>
+                                    <label for="editBookAuthor{{ $book->BukuID }}"
+                                        class="block text-sm font-medium text-gray-700">Penulis</label>
                                     <input type="text" name="Penulis" id="editBookAuthor{{ $book->BukuID }}"
-                                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm" value="{{ $book->Penulis }}" required>
+                                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm"
+                                        value="{{ $book->Penulis }}" required>
                                 </div>
-                    
+
                                 <!-- Input: Penerbit -->
                                 <div class="mb-3">
-                                    <label for="editBookPublisher{{ $book->BukuID }}" class="block text-sm font-medium text-gray-700">Penerbit</label>
+                                    <label for="editBookPublisher{{ $book->BukuID }}"
+                                        class="block text-sm font-medium text-gray-700">Penerbit</label>
                                     <input type="text" name="Penerbit" id="editBookPublisher{{ $book->BukuID }}"
-                                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm" value="{{ $book->Penerbit }}" required>
+                                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm"
+                                        value="{{ $book->Penerbit }}" required>
                                 </div>
-                    
+
                                 <!-- Input: Tahun Terbit -->
                                 <div class="mb-3">
-                                    <label for="editBookYear{{ $book->BukuID }}" class="block text-sm font-medium text-gray-700">Tahun Terbit</label>
+                                    <label for="editBookYear{{ $book->BukuID }}"
+                                        class="block text-sm font-medium text-gray-700">Tahun Terbit</label>
                                     <input type="number" name="TahunTerbit" id="editBookYear{{ $book->BukuID }}"
-                                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm" value="{{ $book->TahunTerbit }}" required min="1800" max="{{ date('Y') }}">
+                                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm"
+                                        value="{{ $book->TahunTerbit }}" required min="1800"
+                                        max="{{ date('Y') }}">
                                 </div>
-                    
+
                                 <!-- Input: Kategori -->
                                 <div class="mb-3">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
                                     <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
                                         @foreach ($anas_kategori as $kategori)
                                             <div class="flex items-center">
-                                                <input type="checkbox" name="KategoriID[]" value="{{ $kategori->KategoriID }}"
+                                                <input type="checkbox" name="KategoriID[]"
+                                                    value="{{ $kategori->KategoriID }}"
                                                     id="kategori{{ $kategori->KategoriID }}"
                                                     class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                                                     @if ($book->kategori->contains('KategoriID', $kategori->KategoriID)) checked @endif>
-                                                <label for="kategori{{ $kategori->KategoriID }}" class="ml-2 text-xs text-gray-700">
+                                                <label for="kategori{{ $kategori->KategoriID }}"
+                                                    class="ml-2 text-xs text-gray-700">
                                                     {{ $kategori->NamaKategori }}
                                                 </label>
                                             </div>
                                         @endforeach
                                     </div>
                                 </div>
-                    
+
                                 <!-- Input: Gambar Buku -->
                                 <div class="mb-3">
-                                    <label for="editBookCover{{ $book->BukuID }}" class="block text-sm font-medium text-gray-700">Gambar Buku</label>
+                                    <label for="editBookCover{{ $book->BukuID }}"
+                                        class="block text-sm font-medium text-gray-700">Gambar Buku</label>
                                     <input type="file" name="cover" id="editBookCover{{ $book->BukuID }}"
                                         class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
                                 </div>
-                    
+
                                 <!-- Buttons -->
                                 <div class="flex justify-end space-x-2">
                                     <button type="button" data-modal-hide="editBookModal{{ $book->BukuID }}"
                                         class="px-3 py-2 mr-2 text-sm text-gray-700 bg-gray-200 rounded-md">Cancel</button>
-                                    <button type="submit" class="px-3 py-2 text-sm text-white bg-blue-600 rounded-md">Save</button>
+                                    <button type="submit"
+                                        class="px-3 py-2 text-sm text-white bg-blue-600 rounded-md">Save</button>
                                 </div>
                             </form>
                         </div>
                     </div>
-                    
-                    
+
+
 
 
 
@@ -180,7 +195,7 @@
             </div>
         </div>
 
-    
+
         <!-- Create Book Modal -->
         <div id="createBookModal"
             class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden backdrop-blur z-50">
@@ -213,9 +228,13 @@
                     <!-- Input: Tahun Terbit -->
                     <div class="mb-3">
                         <label class="block text-sm font-medium text-gray-700">Tahun Terbit</label>
-                        <input type="number" name="TahunTerbit"
-                            class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm" required
-                            min="1800" max="{{ date('Y') }}" placeholder="Enter publication year">
+                        <select name="TahunTerbit" id="Tahun">
+                            {{ $result = 1800 }}
+                            @for ($i = 0; $i < 224; $i++)
+                                {{ $result += 1 }}
+                                <option value="{{ $result }}">{{ $result }}</option>
+                            @endfor
+                        </select>
                     </div>
 
                     <!-- Input: Kategori -->

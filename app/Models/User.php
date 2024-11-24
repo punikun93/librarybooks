@@ -22,6 +22,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Buku::class, 'koleksipribadi', 'UserID', 'BukuID');
     }
 
+    public function log()
+    {
+        return $this->hasMany(LogAktivitas::class, 'UserID', 'UserID');
+    }
+
     protected $primaryKey = 'UserID';
     protected $fillable = [
         'Username',

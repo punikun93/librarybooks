@@ -17,32 +17,7 @@ use Illuminate\Support\Facades\Route;
 class PeminjamanController extends Controller
 {
 
-    public function return(Request $request)
-    {
 
-        $anas_peminjaman = Peminjaman::findOrFail($request->PeminjamanID);
-        $anas_pengembalian = Pengembalian::where('PeminjamanID', $anas_peminjaman->PeminjamanID);
-        try {
-
-            $anas_pengembalian->update([
-                'Status' => 'done',
-            ]);
-            // Log activity if the user is a 'petugas'
-            if (Auth::user()->Role == 'petugas') {
-                LogAktivitas::create([
-                    'UserID' => Auth::user()->UserID,
-                    'aksi' => 'Verifikasi Pengembalian',
-                    'detail' => 'Pengembalian dengan Peminjaman ID: ' . $anas_peminjaman->PeminjamanID . 'dengan buku' . $anas_peminjaman->buku->Judul,
-                    'created_at' => Carbon::now()->locale('id')->translatedFormat('Y-m-d H:i:s'),
-                ]);
-            }
-
-            return redirect()->back()->with('success', 'borrow updated return successfully');
-        } catch (\Exception $e) {
-            dd($e);
-            return redirect()->back()->with('error', 'borrow updated return failed');
-        }
-    }
     public function index()
     {
         $anas_kategori = Kategori::all();
@@ -71,7 +46,9 @@ class PeminjamanController extends Controller
         $anas_status = Route::is('borrow.history') || Route::is('borrow.return') ? 'done' : (Route::is('borrow.confirmed') ? 'proses' : 'booked');
 
         $anas_peminjaman = Peminjaman::with('user', 'buku')->where('Status', $anas_status);
-
+        if (Route::is('borrow.history')) {
+            $anas_peminjaman = Peminjaman::with('user', 'buku')->whereIn('Status', ['done', 'over']);
+        }
         // Tambahkan logika untuk status 'done'
         if ($anas_status == 'done') {
             if (Route::is('borrow.return')) {
@@ -80,9 +57,9 @@ class PeminjamanController extends Controller
                     $query->where('Status', 'proses');
                 });
             } elseif (Route::is('borrow.history')) {
-                // Tampilkan pengembalian dengan status 'selesai'
+                // Tampilkan pengembalian dengan status 'done'
                 $anas_peminjaman = $anas_peminjaman->whereHas('pengembalian', function ($query) {
-                    $query->where('Status', 'done');
+                    $query->whereIn('Status', ['done', 'over']);
                 });
             }
         }
@@ -183,19 +160,47 @@ class PeminjamanController extends Controller
             'PeminjamanID' => 'required|integer',
             'BukuID' => 'required|integer',
         ]);
+        $anas_peminjaman = Peminjaman::where('PeminjamanID', $anas_request->PeminjamanID)->first();
+
+        $anas_peminjaman->update([
+            'Status' => now() > $anas_peminjaman->TanggalPengembalian ? 'over' : 'done',
+        ]);
+
 
         $anas_pengembalian = new Pengembalian();
         $anas_pengembalian->PeminjamanId = $anas_request->PeminjamanID;
         $anas_pengembalian->BukuID = $anas_request->BukuID;
-        $anas_pengembalian->Status = 'proses';
+        $anas_pengembalian->Status = now() > $anas_peminjaman->TanggalPengembalian ? 'over' :  'proses';
         $anas_pengembalian->TanggalPengembalian = Carbon::now();
         $anas_pengembalian->save();
 
-        $anas_peminjaman = Peminjaman::where('PeminjamanID', $anas_request->PeminjamanID);
-        $anas_peminjaman->update([
-            'Status' => 'done',
-        ]);
 
         return redirect()->back()->with('success', 'borrow updated successfully');
+    }
+    public function return(Request $request)
+    {
+
+        $anas_peminjaman = Peminjaman::findOrFail($request->PeminjamanID);
+        $anas_pengembalian = Pengembalian::where('PeminjamanID', $anas_peminjaman->PeminjamanID);
+        try {
+
+            $anas_pengembalian->update([
+                'Status' => 'done',
+            ]);
+            // Log activity if the user is a 'petugas'
+            if (Auth::user()->Role == 'petugas') {
+                LogAktivitas::create([
+                    'UserID' => Auth::user()->UserID,
+                    'aksi' => 'Verifikasi Pengembalian',
+                    'detail' => 'Pengembalian dengan Peminjaman ID: ' . $anas_peminjaman->PeminjamanID . 'dengan buku' . $anas_peminjaman->buku->Judul,
+                    'created_at' => Carbon::now()->locale('id')->translatedFormat('Y-m-d H:i:s'),
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'borrow updated return successfully');
+        } catch (\Exception $e) {
+            dd($e);
+            return redirect()->back()->with('error', 'borrow updated return failed');
+        }
     }
 }

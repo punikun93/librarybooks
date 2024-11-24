@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LogAktivitas;
 use App\Models\Peminjaman;
 use App\Models\Pengembalian;
 use Illuminate\Http\Request;
@@ -30,7 +31,12 @@ class AdminController extends Controller
         // Total pengembalian
         $anas_pengembalian = Pengembalian::count();
 
-        return view('admin.dashboard', compact('anas_peminjaman', 'anas_pengembalian', 'anas_most_borrowed'));
+        $anas_log = LogAktivitas::with('user')
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
+
+
+        return view('admin.dashboard', compact('anas_peminjaman', 'anas_pengembalian', 'anas_most_borrowed', 'anas_log'));
     }
 
     /**

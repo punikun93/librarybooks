@@ -16,21 +16,14 @@ class KategoriController extends Controller
 
   public function index()
   {
-    // Check if user is petugas
-    if (Auth::user()->Role !== 'petugas') {
-      return redirect()->back()->with('error', 'Unauthorized access.');
-    }
 
     $anas_kategori = Kategori::paginate(10);
     return view('admin.books.category', compact('anas_kategori'));
   }
 
-  public function store(Request $anas_request)
+public function store(Request $anas_request)
   {
     // Check if user is petugas
-    if (Auth::user()->Role !== 'petugas') {
-      return redirect()->back()->with('error', 'Unauthorized access.');
-    }
 
     $anas_request->validate([
       'NamaKategori' => 'required|string|max:255',
@@ -40,12 +33,15 @@ class KategoriController extends Controller
       $data = $anas_request->only(['NamaKategori']);
       $kategori = Kategori::create($data);
 
-      LogAktivitas::create([
-        'UserID' => Auth::user()->UserID,
-        'aksi' => 'Tambah Kategori',
-        'detail' => 'Tambah Kategori' . $kategori->NamaKategori,
-        'created_at' => Carbon::now()->locale('id')->translatedFormat('Y-m-d H:i:s'),
-      ]);
+        if (Auth::user()->Role == 'petugas') {
+          LogAktivitas::create([
+            'UserID' => Auth::user()->UserID,
+            'aksi' => 'Tambah Kategori',
+            'detail' => 'Tambah Kategori ' . $kategori->NamaKategori,
+            'created_at' => Carbon::now()->locale('id')->translatedFormat('Y-m-d H:i:s'),
+          ]);
+        }
+      
 
       return redirect()->back()->with('success', 'Category created successfully');
     } catch (\Exception $e) {
@@ -56,9 +52,6 @@ class KategoriController extends Controller
   public function update(Request $anas_request, $anas_kategori)
   {
     // Check if user is petugas
-    if (Auth::user()->Role !== 'petugas') {
-      return redirect()->back()->with('error', 'Unauthorized access.');
-    }
 
     $anas_request->validate([
       'NamaKategori' => 'required|string|max:255',
@@ -74,13 +67,15 @@ class KategoriController extends Controller
       // Update category
       $anas_Kategori->update($anas_data);
 
-      // Log the deletion activity
-      LogAktivitas::create([
-        'UserID' => Auth::user()->UserID,
-        'aksi' => 'Update Kategori',
-        'detail' => 'Update Kategori' .  $oldName . ' menjadi ' . $anas_data['NamaKategori'],
-        'created_at' => Carbon::now()->locale('id')->translatedFormat('Y-m-d H:i:s'),
-      ]);
+      if (Auth::user()->Role == 'petugas') {
+        LogAktivitas::create([
+          'UserID' => Auth::user()->UserID,
+          'aksi' => 'Update Kategori',
+          'detail' => 'Update Kategori ' .  $oldName . ' menjadi ' . $anas_data['NamaKategori'],
+          'created_at' => Carbon::now()->locale('id')->translatedFormat('Y-m-d H:i:s'),
+        ]);
+      }
+    
 
       return redirect()->back()->with('success', 'Category updated successfully');
     } catch (\Exception $e) {
@@ -91,9 +86,6 @@ class KategoriController extends Controller
   public function destroy($anas_kategori)
   {
     // Check if user is petugas
-    if (Auth::user()->Role !== 'petugas') {
-      return redirect()->back()->with('error', 'Unauthorized access.');
-    }
 
     try {
       $anas_kategori = Kategori::findOrFail($anas_kategori);
@@ -101,14 +93,15 @@ class KategoriController extends Controller
 
       $anas_kategori->delete();
 
-      // Log the deletion activity
-      LogAktivitas::create([
-        'UserID' => Auth::user()->UserID,
-        'aksi' => 'Hapus Kategori',
-        'detail' => 'Menghapus Kategori' . $kategoriName,
-        'created_at' => Carbon::now()->locale('id')->translatedFormat('Y-m-d H:i:s'),
-      ]);
-
+      if (Auth::user()->Role == 'petugas') {
+        LogAktivitas::create([
+          'UserID' => Auth::user()->UserID,
+          'aksi' => 'Hapus Kategori',
+          'detail' => 'Menghapus Kategori ' . $kategoriName,
+          'created_at' => Carbon::now()->locale('id')->translatedFormat('Y-m-d H:i:s'),
+        ]);
+      }
+  
       return redirect()->back()->with('success', 'Category deleted successfully');
     } catch (\Exception $e) {
       return redirect()->back()->with('error', 'Failed to delete category. Please try again.');
